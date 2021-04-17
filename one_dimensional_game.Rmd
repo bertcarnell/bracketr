@@ -1,0 +1,262 @@
+---
+title: "Game Test"
+author: "Rob Carnell"
+date: "April 13, 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+set.seed(193932)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Notation
+
+- $X$ random variable representing the true distribution.
+    - Univariate distribution
+    - Distribution of bracket outcomes
+- $P$ is the set of parameters for the true distribution.  
+    - parameters of a histogram over integers
+    - matrix of parameters of a bracket where $p_{team, round}$ is the probability
+    of a team reaching a particular round
+- $Y$ random variable for the adversary distribution
+    - Univariate distribution
+    - Distribution of adversary bracket outcomes
+- $n_A$ the number of adversaries
+- $\theta$ set of parameters for the adversary distribution
+    - parameters of a histogram over the integers
+    - matrix of parameters of the adversary bracket
+- $z$ test value or bracket
+- $s(z|X=x)$ is the score of the test bracket against a bracket from the truth 
+distribution
+- $s(Y_k|X=x)$ is a random variable of scores with a distribution induced by the 
+adversary distribution given a bracket from the truth distribution, where $k=1,\ldots,n_A$ adversaries
+- $f$ is the distribution function of $X$
+
+The goal is to maximize: $\int P(s(z|X=x) > s(Y_k|X=x)f(x) dx \forall k) f(x) dx$
+
+## Centered True and Crowd distributions with 5 adversaries
+
+```{r}
+Nsims <- 10000
+Nplayers <- 5
+# truth
+X <- matrix(sample(45:55, size = Nsims, replace = TRUE), nrow = Nsims, ncol = 1)
+hist(X, breaks = seq(44.5, 55.5, by = 1))
+# crowd
+Y <- matrix(sample(49:51, size = Nplayers*Nsims, replace = TRUE), nrow = Nsims, ncol = Nplayers)
+hist(c(Y), breaks = seq(44.5, 55.5, by = 1))
+```
+
+### Probability of Winning Alone
+
+```{r}
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp1 <- sapply(1:100, f)
+plot(1:100, temp1, type = "l", xlim = c(30, 70), main = "P(Winning Alone)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+points(1:100, temp1)
+```
+
+### Probability of Winning
+
+```{r}
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp2 <- sapply(1:100, f)
+plot(1:100, temp2, type = "l", xlim = c(30, 70), main = "P(Winning)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+points(1:100, temp2)
+```
+
+### Expected Value of $1
+
+```{r}
+f <- function(z)
+{
+  ind1 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  ind2 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  ind3 <- sapply(1:Nsims, function(i) length(which(abs(z - X[i]) == abs(Y[i,] - X[i]))))
+  p_alone <- length(ind1) / Nsims
+  p_win <- length(ind2) / Nsims
+  winners <- ifelse(ind3 == 0, 1, ind3)
+  return(p_alone*1 + mean((p_win - p_alone)*1/winners))
+}
+temp3 <- sapply(1:100, f)
+plot(1:100, temp3, type = "l", xlim = c(30, 70), 
+     main = "EV", xlab = "Nick's Bracket", ylab = "Expected Value")
+points(1:100, temp3)
+```
+
+## Centered True and Crowd distributions with 15 adversaries
+
+```{r}
+Nplayers <- 15
+# truth
+X <- matrix(sample(45:55, size = Nsims, replace = TRUE), nrow = Nsims, ncol = 1)
+#hist(X, breaks = seq(44.5, 55.5, by = 1))
+# crowd
+Y <- matrix(sample(49:51, size = Nplayers*Nsims, replace = TRUE), nrow = Nsims, ncol = Nplayers)
+#hist(c(Y), breaks = seq(44.5, 55.5, by = 1))
+################################################################################
+# probability of winning alone
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp4 <- sapply(1:100, f)
+plot(1:100, temp1, type = "l", xlim = c(30, 70), main = "P(Winning Alone)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+lines(1:100, temp4, col = "red")
+################################################################################
+# probability of winning
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp5 <- sapply(1:100, f)
+plot(1:100, temp2, type = "l", xlim = c(30, 70), main = "P(Winning)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+lines(1:100, temp5, col = "red")
+################################################################################
+# Expected Value of 1 dollar
+f <- function(z)
+{
+  ind1 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  ind2 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  ind3 <- sapply(1:Nsims, function(i) length(which(abs(z - X[i]) == abs(Y[i,] - X[i]))))
+  p_alone <- length(ind1) / Nsims
+  p_win <- length(ind2) / Nsims
+  winners <- ifelse(ind3 == 0, 1, ind3)
+  return(p_alone*1 + mean((p_win - p_alone)*1/winners))
+}
+temp6 <- sapply(1:100, f)
+plot(1:100, temp3, type = "l", xlim = c(30, 70), 
+     main = "EV", xlab = "Nick's Bracket", ylab = "Expected Value")
+lines(1:100, temp6, col = "red")
+```
+
+## Centered True and Non-centered Crowd distributions with 5 adversaries
+
+```{r}
+Nsims <- 10000
+Nplayers <- 5
+# truth
+X <- matrix(sample(45:55, size = Nsims, replace = TRUE), nrow = Nsims, ncol = 1)
+hist(X, breaks = seq(44.5, 55.5, by = 1))
+# crowd
+Y <- matrix(sample(52:54, size = Nplayers*Nsims, replace = TRUE), nrow = Nsims, ncol = Nplayers)
+hist(c(Y), breaks = seq(44.5, 55.5, by = 1))
+################################################################################
+# probability of winning alone
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp1 <- sapply(1:100, f)
+plot(1:100, temp1, type = "l", xlim = c(30, 70), main = "P(Winning Alone)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+points(1:100, temp1)
+################################################################################
+# probability of winning
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp2 <- sapply(1:100, f)
+plot(1:100, temp2, type = "l", xlim = c(30, 70), main = "P(Winning)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+points(1:100, temp2)
+################################################################################
+# Expected Value of 1 dollar
+f <- function(z)
+{
+  ind1 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  ind2 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  ind3 <- sapply(1:Nsims, function(i) length(which(abs(z - X[i]) == abs(Y[i,] - X[i]))))
+  p_alone <- length(ind1) / Nsims
+  p_win <- length(ind2) / Nsims
+  winners <- ifelse(ind3 == 0, 1, ind3)
+  return(p_alone*1 + mean((p_win - p_alone)*1/winners))
+}
+temp3 <- sapply(1:100, f)
+plot(1:100, temp3, type = "l", xlim = c(30, 70), 
+     main = "EV", xlab = "Nick's Bracket", ylab = "Expected Value")
+points(1:100, temp3)
+```
+
+## Centered True and Non-centered Crowd distributions with 5 adversaries - Normal Distribution
+
+```{r}
+Nsims <- 10000
+Nplayers <- 5
+# truth
+X <- matrix(sample(45:55, size = Nsims, replace = TRUE, prob = dnorm(45:55, mean = 50, sd = 2)), nrow = Nsims, ncol = 1)
+hist(X, breaks = seq(44.5, 55.5, by = 1))
+# crowd
+Y <- matrix(sample(52:54, size = Nplayers*Nsims, replace = TRUE, prob = dnorm(52:54, mean = 53, sd = 3/5)), nrow = Nsims, ncol = Nplayers)
+hist(c(Y), breaks = seq(44.5, 55.5, by = 1))
+################################################################################
+# probability of winning alone
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp1 <- sapply(1:100, f)
+plot(1:100, temp1, type = "l", xlim = c(30, 70), main = "P(Winning Alone)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+points(1:100, temp1)
+################################################################################
+# probability of winning
+f <- function(z)
+{
+  ind <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  # % of the time winning
+  return(length(ind) / Nsims)
+}
+temp2 <- sapply(1:100, f)
+plot(1:100, temp2, type = "l", xlim = c(30, 70), main = "P(Winning)", 
+     xlab = "Nick's Bracket", ylab = "Probability")
+points(1:100, temp2)
+################################################################################
+# Expected Value of 1 dollar
+f <- function(z)
+{
+  ind1 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) < abs(Y[i,] - X[i]))))
+  ind2 <- which(sapply(1:Nsims, function(i) all(abs(z - X[i]) <= abs(Y[i,] - X[i]))))
+  ind3 <- sapply(1:Nsims, function(i) length(which(abs(z - X[i]) == abs(Y[i,] - X[i]))))
+  p_alone <- length(ind1) / Nsims
+  p_win <- length(ind2) / Nsims
+  winners <- ifelse(ind3 == 0, 1, ind3)
+  return(p_alone*1 + mean((p_win - p_alone)*1/winners))
+}
+temp3 <- sapply(1:100, f)
+plot(1:100, temp3, type = "l", xlim = c(30, 70), 
+     main = "EV", xlab = "Nick's Bracket", ylab = "Expected Value")
+points(1:100, temp3)
+################################################################################
+```
+
+
+https://fantasy.espn.com/tournament-challenge-bracket/2021/en/whopickedwhom
+
+https://projects.fivethirtyeight.com/2021-march-madness-predictions/
