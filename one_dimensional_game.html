@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Rob Carnell" />
+<meta name="author" content="Rob Carnell and Nancy McMillan" />
 
 <meta name="date" content="2021-04-13" />
 
@@ -166,7 +166,7 @@ pre code {
 
 
 <h1 class="title toc-ignore">Game Test</h1>
-<h4 class="author">Rob Carnell</h4>
+<h4 class="author">Rob Carnell and Nancy McMillan</h4>
 <h4 class="date">April 13, 2021</h4>
 
 </div>
@@ -190,6 +190,7 @@ pre code {
 <li>Univariate distribution</li>
 <li>Distribution of adversary bracket outcomes</li>
 </ul></li>
+<li><span class="math inline">\(n_A\)</span> the number of adversaries</li>
 <li><span class="math inline">\(\theta\)</span> set of parameters for the adversary distribution
 <ul>
 <li>parameters of a histogram over the integers</li>
@@ -197,10 +198,10 @@ pre code {
 </ul></li>
 <li><span class="math inline">\(z\)</span> test value or bracket</li>
 <li><span class="math inline">\(s(z|X=x)\)</span> is the score of the test bracket against a bracket from the truth distribution</li>
-<li><span class="math inline">\(s(Y_k|X=x)\)</span> is the distribution of scores of the kth adversary distribution against the truth distribution</li>
-<li><span class="math inline">\(n_A\)</span> the number of adversaries</li>
+<li><span class="math inline">\(s(Y_k|X=x)\)</span> is a random variable of scores with a distribution induced by the adversary distribution given a bracket from the truth distribution, where <span class="math inline">\(k=1,\ldots,n_A\)</span> adversaries</li>
+<li><span class="math inline">\(f\)</span> is the distribution function of <span class="math inline">\(X\)</span></li>
 </ul>
-<p>The goal is to maximize: <span class="math inline">\(P(s(z|X=x) &gt; s(Y_k|X=x) \forall k)\)</span></p>
+<p>The goal is to maximize: <span class="math inline">\(\int P(s(z|X=x) &gt; s(Y_k|X=x)f(x) dx \forall k) f(x) dx\)</span></p>
 </div>
 <div id="centered-true-and-crowd-distributions-with-5-adversaries" class="section level2">
 <h2>Centered True and Crowd distributions with 5 adversaries</h2>

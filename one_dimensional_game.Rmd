@@ -1,6 +1,6 @@
 ---
 title: "Game Test"
-author: "Rob Carnell"
+author: "Rob Carnell and Nancy McMillan"
 date: "April 13, 2021"
 output: html_document
 ---
