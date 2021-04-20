@@ -260,3 +260,127 @@ points(1:100, temp3)
 https://fantasy.espn.com/tournament-challenge-bracket/2021/en/whopickedwhom
 
 https://projects.fivethirtyeight.com/2021-march-madness-predictions/
+
+```{r}
+fx <- function(x, mu_x, sigma_x) dnorm(x, mu_x, sigma_x)
+
+integrate(fx, lower = -Inf, upper = Inf, mu_x = 3, sigma_x = 1)
+
+fy <- function(y, mu_y, sigma_y) dnorm(y, mu_y, sigma_y)
+
+integrate(fy, lower = -Inf, upper = Inf, mu_y = 3, sigma_y = 1)
+
+Fy <- function(y, mu_y, sigma_y) pnorm(y, mu_y, sigma_y)
+
+Fy(0, 0, 1)
+
+Fx <- function(x, mu_x, sigma_x) pnorm(x, mu_x, sigma_x)
+
+Fx(0, 0, 1)
+
+fw <- function(w, x, mu_y, sigma_y) fy(sqrt(w)+x, mu_y, sigma_y)/2/sqrt(w) + fy(x-sqrt(w), mu_y, sigma_y)/2/sqrt(w)
+
+integrate(fw, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2)
+
+Fw <- function(w, x, mu_y, sigma_y) Fy(sqrt(w)+x, mu_y, sigma_y) - Fy(x-sqrt(w), mu_y, sigma_y)
+
+Fw(9, -3, 0, 1)
+
+fwn <- function(w, x, mu_y, sigma_y, n) n * (1-Fw(w, x, mu_y, sigma_y))^(n-1) * fw(w, x, mu_y, sigma_y)
+
+integrate(fwn, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2, n = 5)
+
+Fwn <- function(w, x, mu_y, sigma_y, n) 1 - (1 - Fw(w, x, mu_y, sigma_y))^n
+
+Fwn(9, -3, 0, 1, 5)
+
+# P( (z - X)^2 < (Y - X)^2 | X=x )
+# P( Y - X > z - X ) + P( Y - X < -( z - X ))
+# P( Y > Z ) + P( Y < 2x - z )
+
+pzx <- function(z, x, mu_y, sigma_y, mu_x, sigma_x, n)
+{
+  1 - Fwn((z-x)^2, x, mu_y, sigma_y, n)
+}
+
+pzx_fx <- function(x, z, mu_x, sigma_x, mu_y, sigma_y, n)
+{
+  pzx(z, x, mu_y, sigma_y, mu_x, sigma_x, n) * fx(x, mu_x, sigma_x)
+}
+
+fz <- function(z, mu_x, sigma_x, mu_y, sigma_y, n)
+{
+  integrate(pzx_fx, lower = -Inf, upper = Inf, z = z, mu_x = mu_x, sigma_x = sigma_x, mu_y = mu_y, sigma_y = sigma_y, n = n)
+}
+
+fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0, 0.5, 5)$value)
+plot(seq(-3, 3, length = 100), fzz)
+
+fzz10 <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0, 0.5, 10)$value)
+plot(seq(-3, 3, length = 100), fzz)
+points(seq(-3, 3, length = 100), fzz10)
+
+fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0.5, 1, 5)$value)
+plot(seq(-3, 3, length = 100), fzz)
+
+################################################################################
+
+fx <- function(x, a_x, b_x) dunif(x, a_x, b_x)
+
+integrate(fx, lower = -Inf, upper = Inf, a_x = -1, b_x = 1)
+
+fy <- function(y, a_y, b_y) dunif(y, a_y, b_y)
+
+integrate(fy, lower = -Inf, upper = Inf, a_y = 1, b_y = 3)
+
+Fy <- function(y, a_y, b_y) punif(y, a_y, b_y)
+
+Fy(0, -1, 1)
+
+Fx <- function(x, a_x, b_x) punif(x, a_x, b_x)
+
+Fx(2, 1, 3)
+
+fw <- function(w, x, a_y, b_y) fy(sqrt(w)+x, a_y, b_y)/2/sqrt(w) + fy(x-sqrt(w), a_y, b_y)/2/sqrt(w)
+
+integrate(fw, lower = 0, upper = Inf, a_y = 1, b_y = 3, x = 5)
+
+Fw <- function(w, x, a_y, b_y) Fy(sqrt(w)+x, a_y, b_y) - Fy(x-sqrt(w), a_y, b_y)
+
+Fw(0.5, 0.4, -1, 1)
+
+fwn <- function(w, x, a_y, b_y, n) n * (1-Fw(w, x, a_y, b_y))^(n-1) * fw(w, x, a_y, b_y)
+
+integrate(fwn, lower = 0, upper = Inf, a_y = 1, b_y = 3, x = 2, n = 5)
+
+Fwn <- function(w, x, a_y, b_y, n) 1 - (1 - Fw(w, x, a_y, b_y))^n
+
+Fwn(0.5, 0.4, 0, 2, 5)
+
+pzx <- function(z, x, a_y, b_y, a_x, b_x, n)
+{
+  1 - Fwn((z-x)^2, x, a_y, b_y, n)
+}
+
+pzx_fx <- function(x, z, a_x, b_x, a_y, b_y, n)
+{
+  pzx(z, x, a_y, b_y, a_x, b_x, n) * fx(x, a_x, b_x)
+}
+
+fz <- function(z, a_x, b_x, a_y, b_y, n)
+{
+  integrate(pzx_fx, lower = -Inf, upper = Inf, z = z, a_x = a_x, b_x = b_x, a_y = a_y, b_y = b_y, n = n)
+}
+
+fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, -1, 1, 0, 0.5, 5)$value)
+plot(seq(-3, 3, length = 100), fzz)
+
+fzz10 <- sapply(seq(-3, 3, length = 100), function(z) fz(z, -1, 1, 0, 0.5, 100)$value)
+plot(seq(-3, 3, length = 100), fzz)
+points(seq(-3, 3, length = 100), fzz10)
+
+fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, -1, 1, 0.5, 1, 5)$value)
+plot(seq(-3, 3, length = 100), fzz)
+
+
+```
