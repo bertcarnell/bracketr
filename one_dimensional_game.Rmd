@@ -277,7 +277,9 @@ $k \in [1,n]$
 $$g(z) = \int P(s(z|X=x) > s(Y_k|X=x)\ \ \forall k) f(x) dx$$
 
 Let the score function be the squared distance between the player guess and the true score
-versus the smallest squared distance between the adversary distributions and the true score
+versus the smallest squared distance between the adversary distributions and the true score.
+Also, reverse the inequality to account for the idea that smaller distances
+are better.
 
 $$s(z|X=x) = (z - x)^2$$
 
@@ -293,17 +295,17 @@ $$ = P(-\sqrt{w}+x \leq Y \leq \sqrt{w}+x) = F_Y(\sqrt{w}+x) - F_Y(-\sqrt{w}+x)$
 
 $$f_W(w) = \frac{d}{dw}F_W(w) = f_Y(\sqrt{w}+x)\frac{1}{2\sqrt{w}} + f_Y(-\sqrt{w}+x)\frac{1}{2\sqrt{w}}$$
 Let $F^{(r)}_W(w)$ be the cummulative distribution function of the $r^{th}$ order
-statistic of $W$
+statistic of $W$ where there are $n_A$ statistics
 
-$$F^{(1)}_W(w) = 1 - (1 - F_W(w))^n$$
+$$F^{(1)}_W(w) = 1 - (1 - F_W(w))^{n_A}$$
 
-$$f^{(1)}_W(w) = n (1-F_W(w))^{n-1} f_W(w)$$
+$$f^{(1)}_W(w) = n_A (1-F_W(w))^{n_A-1} f_W(w)$$
 
 $$g(z) = \int_x P((z-X)^2 < (Y_k-X)^2\ \  \forall k\ \ | X=x) f(x) dx$$
 
-$$ = \int_x P(W^{(1)} > (z-X)^2 \ | \ X=x) f(x) dx = \int_x 1 - P(W^{(1)} < (z-X)^2 \ | \ X=x) f(x) dx = \int_x [1-F_W((z-x)^2)]^nf(x)dx$$
+$$ = \int_x P(W^{(1)} > (z-X)^2 \ | \ X=x) f(x) dx = \int_x 1 - P(W^{(1)} < (z-X)^2 \ | \ X=x) f(x) dx = \int_x [1-F_W((z-x)^2)]^{n_A}f(x)dx$$
 
-$$= \int_x [1 - F_Y(\sqrt{(z-x)^2}+x) + F_Y(-\sqrt{(z-x)^2}+x)]^n \ f(x)dx$$
+$$= \int_x [1 - F_Y(\sqrt{(z-x)^2}+x) + F_Y(-\sqrt{(z-x)^2}+x)]^{n_A} \ f(x)dx$$
 
 ### Normal distribution example
 
@@ -330,15 +332,15 @@ Fx <- function(x, mu_x, sigma_x) pnorm(x, mu_x, sigma_x)
 
 #Fx(0, 0, 1)
 
-fw <- function(w, x, mu_y, sigma_y) fy(sqrt(w)+x, mu_y, sigma_y)/2/sqrt(w) + fy(x-sqrt(w), mu_y, sigma_y)/2/sqrt(w)
+fw <- function(w, x, mu_y, sigma_y) fy(sqrt(w) + x, mu_y, sigma_y)/2/sqrt(w) + fy(x - sqrt(w), mu_y, sigma_y)/2/sqrt(w)
 
 #integrate(fw, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2)
 
-Fw <- function(w, x, mu_y, sigma_y) Fy(sqrt(w)+x, mu_y, sigma_y) - Fy(x-sqrt(w), mu_y, sigma_y)
+Fw <- function(w, x, mu_y, sigma_y) Fy(sqrt(w) + x, mu_y, sigma_y) - Fy(x - sqrt(w), mu_y, sigma_y)
 
 #Fw(9, -3, 0, 1)
 
-fwn <- function(w, x, mu_y, sigma_y, n) n * (1-Fw(w, x, mu_y, sigma_y))^(n-1) * fw(w, x, mu_y, sigma_y)
+fwn <- function(w, x, mu_y, sigma_y, n) n * (1 - Fw(w, x, mu_y, sigma_y))^(n - 1) * fw(w, x, mu_y, sigma_y)
 
 #integrate(fwn, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2, n = 5)
 
@@ -348,7 +350,7 @@ Fwn <- function(w, x, mu_y, sigma_y, n) 1 - (1 - Fw(w, x, mu_y, sigma_y))^n
 
 pzx <- function(z, x, mu_y, sigma_y, mu_x, sigma_x, n)
 {
-  1 - Fwn((z-x)^2, x, mu_y, sigma_y, n)
+  1 - Fwn((z - x)^2, x, mu_y, sigma_y, n)
 }
 
 pzx_fx <- function(x, z, mu_x, sigma_x, mu_y, sigma_y, n)
@@ -382,7 +384,7 @@ find_maxima <- function(f_X, F_W_n, z_vec)
     f_X <- function(x) dnorm(x, 0, 1)
     #f_Y <- function(x) dnorm(x, 0, 0.5)
     F_Y <- function(y) pnorm(y, 0, 0.5)
-    F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+    F_W <- function(w, x) F_Y(sqrt(w) + x) - F_Y(x - sqrt(w))
     F_W_n <- function(w, x) 1 - (1 - F_W(w, x))^5
     #z_vec <- seq(-3, 3, length = 10)
     z_vec <- seq(-3, 3, by = 0.5)
@@ -391,7 +393,7 @@ find_maxima <- function(f_X, F_W_n, z_vec)
   #mean_x <- integrate(function(b) b*f_X(b), lower = -Inf, upper = Inf)$value
   #mean_y <- integrate(function(b) b*f_Y(b), lower = -Inf, upper = Inf)$value
 
-  pzx <- function(z, x) 1 - F_W_n((z-x)^2, x)
+  pzx <- function(z, x) 1 - F_W_n((z - x)^2, x)
 
   pzx_fx <- function(x, z) pzx(z, x) * f_X(x)
   
@@ -430,40 +432,40 @@ find_maxima <- function(f_X, F_W_n, z_vec)
 temp <- find_maxima(f_X = function(x) dnorm(x, 0, 1),
             F_W_n = function(w, x) {
               F_Y <- function(y) pnorm(y, 0, 0.5)
-              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              F_W <- function(w, x) F_Y(sqrt(w) + x) - F_Y(x - sqrt(w))
               1 - (1 - F_W(w, x))^5
             },
-            z_vec = seq(-5, 5, by=0.1))
+            z_vec = seq(-5, 5, by = 0.1))
 
 plot(temp$z, temp$fz)
  
 temp2 <- find_maxima(f_X = function(x) dnorm(x, 0, 1),
             F_W_n = function(w, x) {
               F_Y <- function(y) pnorm(y, 1, 0.5)
-              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              F_W <- function(w, x) F_Y(sqrt(w) + x) - F_Y(x - sqrt(w))
               1 - (1 - F_W(w, x))^5
             },
-            z_vec = seq(-5, 5, by=0.1))
+            z_vec = seq(-5, 5, by = 0.1))
 
 plot(temp2$z, temp2$fz)
 
 temp3 <- find_maxima(f_X = function(x) dnorm(x, 0, 1),
             F_W_n = function(w, x) {
               F_Y <- function(y) pnorm(y, 0, 0.5)
-              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              F_W <- function(w, x) F_Y(sqrt(w) + x) - F_Y(x - sqrt(w))
               1 - (1 - F_W(w, x))^100
             },
-            z_vec = seq(-5, 5, by=0.1))
+            z_vec = seq(-5, 5, by = 0.1))
 
 plot(temp3$z, temp3$fz)
 
 temp4 <- find_maxima(f_X = function(x) dunif(x, -2, 2),
             F_W_n = function(w, x) {
               F_Y <- function(y) pnorm(y, 0, 0.5)
-              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              F_W <- function(w, x) F_Y(sqrt(w) + x) - F_Y(x - sqrt(w))
               1 - (1 - F_W(w, x))^100
             },
-            z_vec = seq(-5, 5, by=0.1))
+            z_vec = seq(-5, 5, by = 0.1))
 
 plot(temp4$z, temp4$fz)
 
