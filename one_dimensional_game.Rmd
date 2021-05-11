@@ -8,6 +8,10 @@ output: html_document
 ```{r setup, include=FALSE}
 set.seed(193932)
 knitr::opts_chunk$set(echo = TRUE)
+
+require(reticulate)
+reticulate::use_python("C:/ProgramData/Anaconda3/python.exe")
+require(numDeriv)
 ```
 
 ## Notation
@@ -33,7 +37,14 @@ distribution
 adversary distribution given a bracket from the truth distribution, where $k=1,\ldots,n_A$ adversaries
 - $f$ is the distribution function of $X$
 
-The goal is to maximize: $\int P(s(z|X=x) > s(Y_k|X=x)f(x) dx \forall k) f(x) dx$
+The goal is to maximize: $\int P(s(z|X=x) > s(Y_k|X=x) \forall k) f(x) dx$
+
+## References
+
+https://fantasy.espn.com/tournament-challenge-bracket/2021/en/whopickedwhom
+
+https://projects.fivethirtyeight.com/2021-march-madness-predictions/
+
 
 ## Centered True and Crowd distributions with 5 adversaries
 
@@ -253,50 +264,87 @@ temp3 <- sapply(1:100, f)
 plot(1:100, temp3, type = "l", xlim = c(30, 70), 
      main = "EV", xlab = "Nick's Bracket", ylab = "Expected Value")
 points(1:100, temp3)
-################################################################################
 ```
 
 
-https://fantasy.espn.com/tournament-challenge-bracket/2021/en/whopickedwhom
+## Theoretical Estimates
 
-https://projects.fivethirtyeight.com/2021-march-madness-predictions/
+Let $X$ be a continuous random variable with CDF $F_X(x)$ and PDF $f_X(x)$ be the
+true distribution of results.  Let $Y_k$ be a continuous random variable with
+CDF $F_Y(y)$ and PDF $f_Y(y)$ be the distribution of adversary results with
+$k \in [1,n]$
+
+$$g(z) = \int P(s(z|X=x) > s(Y_k|X=x)\ \ \forall k) f(x) dx$$
+
+Let the score function be the squared distance between the player guess and the true score
+versus the smallest squared distance between the adversary distributions and the true score
+
+$$s(z|X=x) = (z - x)^2$$
+
+$$g(z) = \int_x P((z-X)^2 < (Y_k-X)^2\ \  \forall k\ \ | X=x) f(x) dx$$
+
+Goal is to maximize $g(z)$
+
+Let, $W = u(Y) = (Y - x)^2$
+
+$$F_W(w) = P(W \leq w) = P((Y-x)^2 \leq w) = P(-\sqrt{w} \leq Y-x \leq \sqrt{w})$$
+
+$$ = P(-\sqrt{w}+x \leq Y \leq \sqrt{w}+x) = F_Y(\sqrt{w}+x) - F_Y(-\sqrt{w}+x)$$
+
+$$f_W(w) = \frac{d}{dw}F_W(w) = f_Y(\sqrt{w}+x)\frac{1}{2\sqrt{w}} + f_Y(-\sqrt{w}+x)\frac{1}{2\sqrt{w}}$$
+Let $F^{(r)}_W(w)$ be the cummulative distribution function of the $r^{th}$ order
+statistic of $W$
+
+$$F^{(1)}_W(w) = 1 - (1 - F_W(w))^n$$
+
+$$f^{(1)}_W(w) = n (1-F_W(w))^{n-1} f_W(w)$$
+
+$$g(z) = \int_x P((z-X)^2 < (Y_k-X)^2\ \  \forall k\ \ | X=x) f(x) dx$$
+
+$$ = \int_x P(W^{(1)} > (z-X)^2 \ | \ X=x) f(x) dx = \int_x 1 - P(W^{(1)} < (z-X)^2 \ | \ X=x) f(x) dx = \int_x [1-F_W((z-x)^2)]^nf(x)dx$$
+
+$$= \int_x [1 - F_Y(\sqrt{(z-x)^2}+x) + F_Y(-\sqrt{(z-x)^2}+x)]^n \ f(x)dx$$
+
+### Normal distribution example
+
+$$X \sim N(\mu_x, \sigma_x)$$
+
+$$Y \sim N(\mu_y, \sigma_y)$$
+
+#### Numeric Integration
 
 ```{r}
 fx <- function(x, mu_x, sigma_x) dnorm(x, mu_x, sigma_x)
 
-integrate(fx, lower = -Inf, upper = Inf, mu_x = 3, sigma_x = 1)
+#integrate(fx, lower = -Inf, upper = Inf, mu_x = 3, sigma_x = 1)
 
 fy <- function(y, mu_y, sigma_y) dnorm(y, mu_y, sigma_y)
 
-integrate(fy, lower = -Inf, upper = Inf, mu_y = 3, sigma_y = 1)
+#integrate(fy, lower = -Inf, upper = Inf, mu_y = 3, sigma_y = 1)
 
 Fy <- function(y, mu_y, sigma_y) pnorm(y, mu_y, sigma_y)
 
-Fy(0, 0, 1)
+#Fy(0, 0, 1)
 
 Fx <- function(x, mu_x, sigma_x) pnorm(x, mu_x, sigma_x)
 
-Fx(0, 0, 1)
+#Fx(0, 0, 1)
 
 fw <- function(w, x, mu_y, sigma_y) fy(sqrt(w)+x, mu_y, sigma_y)/2/sqrt(w) + fy(x-sqrt(w), mu_y, sigma_y)/2/sqrt(w)
 
-integrate(fw, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2)
+#integrate(fw, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2)
 
 Fw <- function(w, x, mu_y, sigma_y) Fy(sqrt(w)+x, mu_y, sigma_y) - Fy(x-sqrt(w), mu_y, sigma_y)
 
-Fw(9, -3, 0, 1)
+#Fw(9, -3, 0, 1)
 
 fwn <- function(w, x, mu_y, sigma_y, n) n * (1-Fw(w, x, mu_y, sigma_y))^(n-1) * fw(w, x, mu_y, sigma_y)
 
-integrate(fwn, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2, n = 5)
+#integrate(fwn, lower = 0, upper = Inf, mu_y = 3, sigma_y = 1, x = 2, n = 5)
 
 Fwn <- function(w, x, mu_y, sigma_y, n) 1 - (1 - Fw(w, x, mu_y, sigma_y))^n
 
-Fwn(9, -3, 0, 1, 5)
-
-# P( (z - X)^2 < (Y - X)^2 | X=x )
-# P( Y - X > z - X ) + P( Y - X < -( z - X ))
-# P( Y > Z ) + P( Y < 2x - z )
+#Fwn(9, -3, 0, 1, 5)
 
 pzx <- function(z, x, mu_y, sigma_y, mu_x, sigma_x, n)
 {
@@ -310,77 +358,114 @@ pzx_fx <- function(x, z, mu_x, sigma_x, mu_y, sigma_y, n)
 
 fz <- function(z, mu_x, sigma_x, mu_y, sigma_y, n)
 {
-  integrate(pzx_fx, lower = -Inf, upper = Inf, z = z, mu_x = mu_x, sigma_x = sigma_x, mu_y = mu_y, sigma_y = sigma_y, n = n)
+  integrate(pzx_fx, lower = -Inf, upper = Inf, z = z, mu_x = mu_x, 
+            sigma_x = sigma_x, mu_y = mu_y, sigma_y = sigma_y, n = n)$value
 }
 
-fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0, 0.5, 5)$value)
-plot(seq(-3, 3, length = 100), fzz)
+fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0, 0.5, 5))
+plot(seq(-3, 3, length = 100), fzz, type = "l", xlab = "z", ylab = "Probability of Win")
 
-fzz10 <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0, 0.5, 10)$value)
-plot(seq(-3, 3, length = 100), fzz)
-points(seq(-3, 3, length = 100), fzz10)
+fzz10 <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0, 0.5, 10))
+plot(seq(-3, 3, length = 100), fzz, type = "l", xlab = "z", ylab = "Probability of Win")
+lines(seq(-3, 3, length = 100), fzz10)
 
-fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0.5, 1, 5)$value)
-plot(seq(-3, 3, length = 100), fzz)
+fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, 0, 1, 0.5, 1, 5))
+plot(seq(-3, 3, length = 100), fzz, type = "l", xlab = "z", ylab = "Probability of Win")
+```
 
-################################################################################
 
-fx <- function(x, a_x, b_x) dunif(x, a_x, b_x)
-
-integrate(fx, lower = -Inf, upper = Inf, a_x = -1, b_x = 1)
-
-fy <- function(y, a_y, b_y) dunif(y, a_y, b_y)
-
-integrate(fy, lower = -Inf, upper = Inf, a_y = 1, b_y = 3)
-
-Fy <- function(y, a_y, b_y) punif(y, a_y, b_y)
-
-Fy(0, -1, 1)
-
-Fx <- function(x, a_x, b_x) punif(x, a_x, b_x)
-
-Fx(2, 1, 3)
-
-fw <- function(w, x, a_y, b_y) fy(sqrt(w)+x, a_y, b_y)/2/sqrt(w) + fy(x-sqrt(w), a_y, b_y)/2/sqrt(w)
-
-integrate(fw, lower = 0, upper = Inf, a_y = 1, b_y = 3, x = 5)
-
-Fw <- function(w, x, a_y, b_y) Fy(sqrt(w)+x, a_y, b_y) - Fy(x-sqrt(w), a_y, b_y)
-
-Fw(0.5, 0.4, -1, 1)
-
-fwn <- function(w, x, a_y, b_y, n) n * (1-Fw(w, x, a_y, b_y))^(n-1) * fw(w, x, a_y, b_y)
-
-integrate(fwn, lower = 0, upper = Inf, a_y = 1, b_y = 3, x = 2, n = 5)
-
-Fwn <- function(w, x, a_y, b_y, n) 1 - (1 - Fw(w, x, a_y, b_y))^n
-
-Fwn(0.5, 0.4, 0, 2, 5)
-
-pzx <- function(z, x, a_y, b_y, a_x, b_x, n)
+```{r}
+find_maxima <- function(f_X, F_W_n, z_vec)
 {
-  1 - Fwn((z-x)^2, x, a_y, b_y, n)
+  if (FALSE)
+  {
+    f_X <- function(x) dnorm(x, 0, 1)
+    #f_Y <- function(x) dnorm(x, 0, 0.5)
+    F_Y <- function(y) pnorm(y, 0, 0.5)
+    F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+    F_W_n <- function(w, x) 1 - (1 - F_W(w, x))^5
+    #z_vec <- seq(-3, 3, length = 10)
+    z_vec <- seq(-3, 3, by = 0.5)
+  }
+  
+  #mean_x <- integrate(function(b) b*f_X(b), lower = -Inf, upper = Inf)$value
+  #mean_y <- integrate(function(b) b*f_Y(b), lower = -Inf, upper = Inf)$value
+
+  pzx <- function(z, x) 1 - F_W_n((z-x)^2, x)
+
+  pzx_fx <- function(x, z) pzx(z, x) * f_X(x)
+  
+  fz <- function(z) integrate(pzx_fx, lower = -Inf, upper = Inf, z = z)$value
+
+  fz_vec <- function(z_vec) sapply(z_vec, fz)
+  
+  #fz_vec(z_vec)
+  
+  d_fz_vec <- function(z_vec) numDeriv::grad(fz_vec, z_vec)
+  #d_fz_vec(z_vec)
+  
+  #cbind(z_vec, d_fz_vec(z_vec), sign(d_fz_vec(z_vec)), diff(sign(d_fz_vec(z_vec))))
+  
+  sign_changes <- which(diff(sign(d_fz_vec(z_vec))) < 0)
+  
+  if (length(sign_changes) > 0)
+  {
+    roots <- numeric(length(sign_changes))
+    for (i in seq_along(sign_changes))
+    {
+      roots[i] <- uniroot(d_fz_vec, interval = c(z_vec[sign_changes[i]], 
+                                                 z_vec[sign_changes[i] + 1]))$root
+    }
+  } else
+  {
+    roots <- NA
+  }
+  
+  return(list(z = z_vec,
+              fz = fz_vec(z_vec),
+              dfz = d_fz_vec(z_vec),
+              maxima = roots))  
 }
 
-pzx_fx <- function(x, z, a_x, b_x, a_y, b_y, n)
-{
-  pzx(z, x, a_y, b_y, a_x, b_x, n) * fx(x, a_x, b_x)
-}
+temp <- find_maxima(f_X = function(x) dnorm(x, 0, 1),
+            F_W_n = function(w, x) {
+              F_Y <- function(y) pnorm(y, 0, 0.5)
+              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              1 - (1 - F_W(w, x))^5
+            },
+            z_vec = seq(-5, 5, by=0.1))
 
-fz <- function(z, a_x, b_x, a_y, b_y, n)
-{
-  integrate(pzx_fx, lower = -Inf, upper = Inf, z = z, a_x = a_x, b_x = b_x, a_y = a_y, b_y = b_y, n = n)
-}
+plot(temp$z, temp$fz)
+ 
+temp2 <- find_maxima(f_X = function(x) dnorm(x, 0, 1),
+            F_W_n = function(w, x) {
+              F_Y <- function(y) pnorm(y, 1, 0.5)
+              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              1 - (1 - F_W(w, x))^5
+            },
+            z_vec = seq(-5, 5, by=0.1))
 
-fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, -1, 1, 0, 0.5, 5)$value)
-plot(seq(-3, 3, length = 100), fzz)
+plot(temp2$z, temp2$fz)
 
-fzz10 <- sapply(seq(-3, 3, length = 100), function(z) fz(z, -1, 1, 0, 0.5, 100)$value)
-plot(seq(-3, 3, length = 100), fzz)
-points(seq(-3, 3, length = 100), fzz10)
+temp3 <- find_maxima(f_X = function(x) dnorm(x, 0, 1),
+            F_W_n = function(w, x) {
+              F_Y <- function(y) pnorm(y, 0, 0.5)
+              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              1 - (1 - F_W(w, x))^100
+            },
+            z_vec = seq(-5, 5, by=0.1))
 
-fzz <- sapply(seq(-3, 3, length = 100), function(z) fz(z, -1, 1, 0.5, 1, 5)$value)
-plot(seq(-3, 3, length = 100), fzz)
+plot(temp3$z, temp3$fz)
 
+temp4 <- find_maxima(f_X = function(x) dunif(x, -2, 2),
+            F_W_n = function(w, x) {
+              F_Y <- function(y) pnorm(y, 0, 0.5)
+              F_W <- function(w, x) F_Y(sqrt(w)+x) - F_Y(x-sqrt(w))
+              1 - (1 - F_W(w, x))^100
+            },
+            z_vec = seq(-5, 5, by=0.1))
+
+plot(temp4$z, temp4$fz)
 
 ```
+
