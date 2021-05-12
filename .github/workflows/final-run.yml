@@ -36,7 +36,8 @@ jobs:
         
       - name: Upload
         uses: actions/upload-artifact@v2.2.3
-        path: ${{ matrix.config.name }}.csv
+        with:
+          path: ${{ matrix.config.name }}.csv
         
   collect-job:
     needs: run-job
