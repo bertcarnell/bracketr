@@ -25,6 +25,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get upgrade -y
           sudo apt-get install -y r-cran-ggplot2 r-cran-dplyr
 
       - name: Do Work
