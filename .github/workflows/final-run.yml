@@ -25,7 +25,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          install.packages(c("ggplot2", "dplyr"))
+          sudo apt-get install -y r-cran-ggplot2 r-cran-dplyr
+
+      - name: Do Work
+        run: |
           write.csv(data.frame(x=1), file = "${{ matrix.config.name }}.csv"
         shell: Rscript {0}
         
