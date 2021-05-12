@@ -1,0 +1,46 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+#
+# See https://github.com/r-lib/actions/tree/master/examples#readme for
+# additional example workflows available for the R community.
+
+name: final-run
+
+on:
+  workflow_dispatch
+  #push:
+  #  branches: [ main ]
+  #pull_request:
+  #  branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    name: ${{ matrix.config.name }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {name: 'Xmax'}
+          - {name: 'Ymax'}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: R container
+        uses: r-lib/actions/setup-r@master
+
+      - name: Install dependencies
+        run: |
+          install.packages(c("ggplot2", "dplyr"))
+        shell: Rscript {0}
+        
+      - name: Run
+        run: |
+          echo running ${{matrix.config.name}}
+        shell: bash
