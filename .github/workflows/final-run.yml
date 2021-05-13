@@ -1,7 +1,7 @@
 name: final-run
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
   push:
     paths:
       - .github/workflows/final-run.yml
