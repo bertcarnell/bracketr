@@ -36,4 +36,5 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update -qq \
 	r-cran-knitr \
 	r-cran-rmarkdown \
 	r-cran-assertthat \
-	r-cran-dplyr
+	r-cran-dplyr \
+	r-cran-openxlsx
