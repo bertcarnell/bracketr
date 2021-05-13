@@ -13,12 +13,19 @@ names(Praw) <- gsub("X[.]U[.]FEFF[.]", "", names(Praw))
 names(Thraw) <- gsub("X[.]U[.]FEFF[.]", "", names(Thraw))
 names(trans) <- gsub("X[.]U[.]FEFF[.]", "", names(trans))
 
+print(names(Praw))
+print(names(Thraw))
+print(names(trans))
+
 cat("Creating P\n")
 
 Praw_teams_clean <- gsub("[[:space:]][0-9]+", "", Praw$TEAM)
 ind <- match(tolower(trans$TEAM), table = tolower(Praw_teams_clean))
 
-P <- matrix(NA, nrow=64, ncol=6)
+print(Praw_teams_clean)
+print(ind)
+
+P <- matrix(NA, nrow = 64, ncol = 6)
 
 normalizeValues <- function(x, desiredSum)
 {
