@@ -34,7 +34,7 @@ drawBracket <- function(structureList, P, winner = NA)
 }
 
 
-drawMaxLikelihoodBracket <- function(structureList, P)
+drawMaxLikelihoodBracket <- function(structureList, P, winner=NA)
 {
   X <- matrix(NA, nrow = nrow(P), ncol = ncol(P))
   for (i in seq_along(structureList))
@@ -42,10 +42,17 @@ drawMaxLikelihoodBracket <- function(structureList, P)
     ind <- structureList[[i]]
     if (ind[1,2] == ncol(X))
     {
-      ind2 <- which.max(P[ind])
-      temp <- rep(0, length=nrow(ind))
-      temp[ind2] <- 1
-      X[ind] <- temp
+      if (is.na(winner))
+      {
+        ind2 <- which.max(P[ind])
+        temp <- rep(0, length=nrow(ind))
+        temp[ind2] <- 1
+        X[ind] <- temp
+      } else
+      {
+        X[,ncol(X)] <- 0
+        X[winner,ncol(X)] <- 1
+      }
     } else
     {
       current_column <- ind[1,2]
@@ -83,7 +90,8 @@ drawEquiprobableBracket <- function(n_teams, n_rounds, structureList)
 scoreBracket <- function(M, Mtruth)
 {
   # ESPN tracks March Madness brackets using a 10-20-40-80-160-320 scoring system.
-  sum(apply(M*Mtruth, 2, sum)*c(10, 20, 40, 80, 160, 320))
+  nc <- ncol(M)
+  sum(apply(M*Mtruth, 2, sum)*(10*2^(0:(nc-1))))
 }
 
 # method 1 swaps rows from a game
@@ -197,12 +205,21 @@ geneticBracketSearch <- function(seedBracket, pRate, nchildren, ngenerations, de
   start_pwin <- current_best_pwin
   children_scores <- numeric(nchildren)
   children_pwin <- numeric(nchildren)
+  n_since_change <- 0
   for (i in 1:ngenerations)
   {
-    # want to cool the permutation rate with generations
-    # pRate = pRate / (1 + log(i))
-    pRate <- (0.5 - pRate) / (ngenerations - 1) * (i - 1) + pRate
-    if (debug) cat(paste("\tGeneration", i, "Poisson Rate", round(pRate, 3), "P(win)", current_best_pwin, "\n"))
+    # want to cool the permutation rate with generations unless
+    #  there have been to changes for 10 generations, then warm it up again
+    if (n_since_change < 10)
+    {
+      pRate <- (0.5 - pRate) / (ngenerations - 1) * (i - 1) + pRate
+    } else
+    {
+      pRate <- 1.1 * pRate
+    }
+    if (debug) 
+      cat(paste("\tGeneration", i, "Poisson Rate", round(pRate, 3), "P(win)", 
+                current_best_pwin, "\n"))
     for (j in 1:nchildren)
     {
       nmutations <- rpois(1, pRate) + 1
@@ -220,6 +237,10 @@ geneticBracketSearch <- function(seedBracket, pRate, nchildren, ngenerations, de
       current_best_pwin <- children_pwin[ind]
       current_best_score <- children_scores[ind]
       current_best <- children[[ind]]
+      n_since_change <- 0
+    } else
+    {
+      n_since_change <- n_since_change + 1
     }
   }
   cat(paste(Sys.time(), "\n"))
@@ -298,5 +319,29 @@ correlateAdversarySampleList <- function(Z, Y, n_truth_brackets)
   {
     mean(sapply(ML, function(M) cov(rowSums(M), rowSums(Z))))
   }))
+}
+
+checkBracket <- function(structureList, M)
+{
+  for (i in seq_along(structureList))
+  {
+    ind <- structureList[[i]]
+    if (abs(sum(M[ind]) - 1) > 1E-6)
+    {
+      print(structureList[[i]])
+      print(sum(M[ind]))
+      stop("Section does not sum to 1")
+    }
+  }
+}
+
+normalizeBracket <- function(structureList, M)
+{
+  for (i in seq_along(structureList))
+  {
+    ind <- structureList[[i]]
+    M[ind] <- M[ind] / sum(M[ind])
+  }
+  return(M)
 }
 

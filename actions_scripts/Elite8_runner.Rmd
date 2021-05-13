@@ -1,0 +1,80 @@
+---
+title: "Runner Elite8"
+author: "RC"
+date: "5/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+output_file <- "Elite8_runner.csv"
+
+require(ggplot2)
+require(dplyr)
+
+source("../utility_functions.R")
+load("../2021BracketMetadata.Rdata")
+source("common_parameters.R")
+```
+
+## Create the Starting Bracket
+
+```{r createStartBracket}
+Z <- drawMaxLikelihoodBracket(structureList, P, which(trans$TEAM == "Gonzaga"))
+checkBracket(structureList, Z)
+Zscore <- scoreTruthSampleList(Z, X)
+```
+
+## Genetic Algorithm
+
+```{r geneticAlgorithm}
+newZ <- geneticBracketSearch(Z, pRate, nchildren, ngenerations, TRUE, gen_method)
+
+dimnames(newZ$current_best) <- list(trans$TEAM, paste0("Round", 1:6))
+write.csv(newZ$current_best, file = output_file)
+```
+
+- Score went from `r newZ$start_score` to `r newZ$score`
+- P(win) went from `r newZ$start_pwin` to `r newZ$pwin`
+
+## Score Density
+
+```{r score-density, echo=FALSE}
+plot_data <- data.frame(
+  group = c(rep("Original Bracket", length(Zscore)),
+            rep("Adversary Brackets", length(unlist(Yscore))),
+            rep("New Bracket", length(newZ$scores))),
+  score = c(Zscore, unlist(Yscore), newZ$scores)
+)
+
+ggplot(plot_data, aes(x = score, group = group, col = group)) +
+  geom_density() +
+  labs(x = "Score", y = "Density", col = "") +
+  xlim(0, 1920) +
+  geom_vline(aes(xintercept = score, col = group), lty = 2, 
+             data = plot_data %>% group_by(group) %>% summarise(score = mean(score)))
+```
+
+## Bracket Fingerprint
+
+```{r bracket-image, echo=FALSE, fig.height=8}
+plot_data2 <- data.frame(
+  group = factor(rep(c("Original Bracket", "New Bracket", "Mean Adversary", "Mean Truth"), 
+                     each = length(trans$TEAM)),
+                 levels = c("Mean Truth", "Mean Adversary", "Original Bracket", "New Bracket")),
+  team = factor(rep(trans$TEAM, times = 4), levels = rev(trans$TEAM)),
+  round = c(rowSums(Z), 
+            rowSums(newZ$current_best), 
+            apply(sapply(Y, function(z) {
+                              apply(sapply(z, rowSums), 1, mean)
+                            }), 1, mean),
+            apply(sapply(X, function(z) rowSums(z)), 1, mean))
+)
+
+ggplot(plot_data2, aes(x = round, y = team, fill = group, group = group)) +
+  geom_bar(stat = "identity", width = 0.5, position = position_dodge()) +
+  facet_grid(. ~ group) +
+  labs(y = "", x = "Round", fill = "")
+
+```

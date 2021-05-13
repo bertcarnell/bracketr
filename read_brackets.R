@@ -1,6 +1,7 @@
 # Read Bracket
 
 require(openxlsx)
+source("utility_functions.R")
 
 Praw <- read.xlsx("2021BracketMetadata.xlsx", sheet = "538")
 Thraw <- read.xlsx("2021BracketMetadata.xlsx", sheet = "ESPN")
@@ -82,32 +83,12 @@ for (i in seq_along(BstuctUnique))
   structureList[[i]] <- which(Bstruct == BstuctUnique[i], arr.ind = TRUE)
 }
 
-normalizeBracket <- function(structureList, M)
-{
-  for (i in seq_along(structureList))
-  {
-    ind <- structureList[[i]]
-    M[ind] <- M[ind] / sum(M[ind])
-  }
-  return(M)
-}
-
-checkBracket <- function(structureList, M)
-{
-  for (i in seq_along(structureList))
-  {
-    ind <- structureList[[i]]
-    if (abs(sum(M[ind]) - 1) > 1E-6)
-    {
-      print(structureList[[i]])
-      print(sum(M[ind]))
-      stop("Section does not sum to 1")
-    }
-  }
-}
-
 P <- normalizeBracket(structureList, P)
 Th <- normalizeBracket(structureList, Th)
 
 checkBracket(structureList, P)
 checkBracket(structureList, Th)
+
+save(P, Th, structureList, Bstruct, BstuctUnique, trans,
+     file = "2021BracketMetadata.Rdata")
+

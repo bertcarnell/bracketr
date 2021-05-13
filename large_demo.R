@@ -8,8 +8,8 @@ source("utility_functions.R")
 
 set.seed(193849)
 
-n_truth_brackets <- 500 # need to get up to 10,000
-n_adversaries <- 100
+n_truth_brackets <- 1000 # need to get up to 10,000
+n_adversaries <- 20
 
 X <- drawTruthSampleList(P, structureList, n_truth_brackets)
 checkTruthSampleList(X, structureList)
@@ -89,10 +89,6 @@ checkBracket(structureList, Z)
 Zscore <- scoreTruthSampleList(Z, X)
 
 set.seed(1938383)
-newZ1 <- geneticBracketSearch(Z, 3, 100, 50, TRUE)
-cat(paste("Score from", newZ1$start_score, "to", newZ1$score, "\n"))
-cat(paste("P(win) from", newZ1$start_pwin, "to", newZ1$pwin, "\n"))
-
 newZ1 <- geneticBracketSearch(Z, 3, 100, 50, TRUE, method = 2)
 cat(paste("Score from", newZ1$start_score, "to", newZ1$score, "\n"))
 cat(paste("P(win) from", newZ1$start_pwin, "to", newZ1$pwin, "\n"))
@@ -130,8 +126,8 @@ ggplot(plot_data2, aes(x = round, y = team, fill = group, group = group)) +
   facet_grid(. ~ group) +
   labs(y = "", x = "Round", fill = "")
 
-plot(newZ1$scores, newZ1$cov, ylab="Covariance with truth", xlab = "score")
-plot(newZ1$scores, newZ1$covA, ylab="Covariance with Adversary", xlab = "score")
+#plot(newZ1$scores, newZ1$cov, ylab="Covariance with truth", xlab = "score")
+#plot(newZ1$scores, newZ1$covA, ylab="Covariance with Adversary", xlab = "score")
 
 ################################################################################
 
@@ -140,7 +136,7 @@ Z <- Ymax
 checkBracket(structureList, Z)
 Zscore <- scoreTruthSampleList(Z, X)
 
-newZ2 <- geneticBracketSearch(Z, 3, 100, 50, TRUE)
+newZ2 <- geneticBracketSearch(Z, 3, 100, 50, TRUE, method = 2)
 cat(paste("Score from", newZ2$start_score, "to", newZ2$score, "\n"))
 cat(paste("P(win) from", newZ2$start_pwin, "to", newZ2$pwin, "\n"))
 
