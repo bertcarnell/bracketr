@@ -11,7 +11,7 @@ trans <- read.csv("2021BracketMetadata_order.csv", encoding = "UTF-8")
 
 cat("Creating P\n")
 
-Praw_teams_clean <- gsub("[[:space:]][0-9]+", "", Praw$TEAM)
+Praw_teams_clean <- gsub("[ ][0-9]+", "", Praw$TEAM)
 ind <- match(tolower(trans$TEAM), table = tolower(Praw_teams_clean))
 
 if (any(is.na(ind)))
