@@ -9,21 +9,17 @@ Praw <- read.csv("2021BracketMetadata_538.csv", encoding = "UTF-8")
 Thraw <- read.csv("2021BracketMetadata_ESPN.csv", encoding = "UTF-8")
 trans <- read.csv("2021BracketMetadata_order.csv", encoding = "UTF-8")
 
-names(Praw) <- gsub("X[.]U[.]FEFF[.]", "", names(Praw))
-names(Thraw) <- gsub("X[.]U[.]FEFF[.]", "", names(Thraw))
-names(trans) <- gsub("X[.]U[.]FEFF[.]", "", names(trans))
-
-print(names(Praw))
-print(names(Thraw))
-print(names(trans))
-
 cat("Creating P\n")
 
 Praw_teams_clean <- gsub("[[:space:]][0-9]+", "", Praw$TEAM)
 ind <- match(tolower(trans$TEAM), table = tolower(Praw_teams_clean))
 
-print(Praw_teams_clean)
-print(ind)
+if (any(is.na(ind)))
+{
+  print(Praw$TEAM)
+  print(trans$TEAM)
+  stop("Error in matching team strings")
+}
 
 P <- matrix(NA, nrow = 64, ncol = 6)
 
