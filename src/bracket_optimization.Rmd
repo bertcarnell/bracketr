@@ -48,15 +48,15 @@ Yscore <- scoreAdversarySampleList(Y, X, n_truth_brackets)
 
 ## Report Parameters
 
-- Output File: `r params$output_file`
-- Type of Start Point: `r params$start_point`
-- Elite 8 Team: `r params$elite8_team`
-- Number of truth Brackets: `r params$n_truth_brakcets`
-- Number of Adversaries: `r params$n_adversaries`
-- Poisson Mutation rate: `r params$pRate`
-- Number of children per generation: `r params$nchildren`
-- Number of generations: `r params$ngenerations`
-- Bracket permutation method: `r params$gen_method`
+- **Output File**: `r params$output_file`
+- **Type of Start Point**: `r params$start_point`
+- **Elite 8 Team**: `r params$elite8_team`
+- **Number of truth Brackets**: `r params$n_truth_brakcets`
+- **Number of Adversaries**: `r params$n_adversaries`
+- **Poisson Mutation rate**: `r params$pRate`
+- **Number of children per generation**: `r params$nchildren`
+- **Number of generations**: `r params$ngenerations`
+- **Bracket permutation method**: `r params$gen_method`
 
 ## Create the Starting Bracket
 

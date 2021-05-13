@@ -1,25 +1,22 @@
 # Read Bracket
 
-require(openxlsx)
 require(assertthat)
 source("utility_functions.R")
 
 cat("\nReading Excel\n")
 
-xlsxfile <- "2021BracketMetadata.xlsx"
-assertthat::assert_that(file.exists(xlsxfile),
-                        msg = paste("File: ", xlsxfile, "Does not exist"))
+Praw <- read.csv("2021BracketMetadata_538.csv", encoding = "UTF-8")
+Thraw <- read.csv("2021BracketMetadata_ESPN.csv", encoding = "UTF-8")
+trans <- read.csv("2021BracketMetadata_order.csv", encoding = "UTF-8")
 
-Praw <- openxlsx::read.xlsx(xlsxfile, sheet = "538")
-Thraw <- openxlsx::read.xlsx(xlsxfile, sheet = "ESPN")
-trans <- openxlsx::read.xlsx(xlsxfile, sheet = "Order")
+names(Praw) <- gsub("X[.]U[.]FEFF[.]", "", names(Praw))
+names(Thraw) <- gsub("X[.]U[.]FEFF[.]", "", names(Thraw))
+names(trans) <- gsub("X[.]U[.]FEFF[.]", "", names(trans))
 
 cat("Creating P\n")
 
 Praw_teams_clean <- gsub("[[:space:]][0-9]+", "", Praw$TEAM)
 ind <- match(tolower(trans$TEAM), table = tolower(Praw_teams_clean))
-
-#cbind(Praw_teams_clean[ind], trans$TEAM)
 
 P <- matrix(NA, nrow=64, ncol=6)
 
@@ -39,20 +36,12 @@ normalizeValues <- function(x, desiredSum)
   return(temp)
 }
 
-P[,1] <- normalizeValues(Praw$`2ND`, 32)[ind]
+P[,1] <- normalizeValues(Praw$X2ND, 32)[ind]
 P[,2] <- normalizeValues(Praw$SWEET.16, 16)[ind]
 P[,3] <- normalizeValues(Praw$ELITE.EIGHT, 8)[ind]
 P[,4] <- normalizeValues(Praw$FINAL.FOUR, 4)[ind]
-P[,5] <- normalizeValues(Praw$CHAMP., 2)[ind]
+P[,5] <- normalizeValues(Praw$CHAMP, 2)[ind]
 P[,6] <- normalizeValues(Praw$WIN, 1)[ind]
-
-if (any(is.na(P)))
-{
-  print(P)
-  stop("Error Reading Truth probabilities")
-}
-
-# apply(P, 2, sum)
 
 cat("Creating Theta\n")
 
@@ -78,8 +67,6 @@ Th[,4] <- extractTheta(Thraw$E8)
 Th[,5] <- extractTheta(Thraw$F4)
 Th[,6] <- extractTheta(Thraw$NCG)
 
-# apply(Th, 2, sum)
-
 cat("Creating Bracket Structure\n")
 
 Bstruct <- matrix(NA, nrow = 64, ncol = 6)
@@ -102,22 +89,10 @@ for (i in seq_along(BstuctUnique))
   structureList[[i]] <- which(Bstruct == BstuctUnique[i], arr.ind = TRUE)
 }
 
-if (any(is.na(P)))
-{
-  print(P)
-  stop("Error Reading Truth probabilities")
-}
-
 cat("Normalizing\n")
 
 P <- normalizeBracket(structureList, P)
 Th <- normalizeBracket(structureList, Th)
-
-if (any(is.na(P)))
-{
-  print(P)
-  stop("Error Reading Truth probabilities")
-}
 
 cat("Checking\n")
 
