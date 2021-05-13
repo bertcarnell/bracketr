@@ -323,12 +323,25 @@ correlateAdversarySampleList <- function(Z, Y, n_truth_brackets)
 
 checkBracket <- function(structureList, M)
 {
+  if (any(is.na(M)) | any(is.na(unlist(structureList))))
+  {
+    print("Diagnositcs")
+    print("")
+    print(M)
+    print("")
+    print(structureList)
+  }
   for (i in seq_along(structureList))
   {
     ind <- structureList[[i]]
     if (abs(sum(M[ind]) - 1) > 1E-6)
     {
+      print("Diagnostics")
+      print("")
       print(structureList[[i]])
+      print("")
+      print(M[ind])
+      print("")
       print(sum(M[ind]))
       stop("Section does not sum to 1")
     }
