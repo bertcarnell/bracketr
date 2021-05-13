@@ -3,9 +3,13 @@
 require(openxlsx)
 source("utility_functions.R")
 
+cat("\nReading Excel\n")
+
 Praw <- read.xlsx("2021BracketMetadata.xlsx", sheet = "538")
 Thraw <- read.xlsx("2021BracketMetadata.xlsx", sheet = "ESPN")
 trans <- read.xlsx("2021BracketMetadata.xlsx", sheet = "Order")
+
+cat("Creating P\n")
 
 Praw_teams_clean <- gsub("[[:space:]][0-9]+", "", Praw$TEAM)
 ind <- match(tolower(trans$TEAM), table = tolower(Praw_teams_clean))
@@ -37,7 +41,9 @@ P[,4] <- normalizeValues(Praw$FINAL.FOUR, 4)[ind]
 P[,5] <- normalizeValues(Praw$CHAMP., 2)[ind]
 P[,6] <- normalizeValues(Praw$WIN, 1)[ind]
 
-apply(P, 2, sum)
+# apply(P, 2, sum)
+
+cat("Creating Theta\n")
 
 extractTheta <- function(rnd)
 {
@@ -61,7 +67,9 @@ Th[,4] <- extractTheta(Thraw$E8)
 Th[,5] <- extractTheta(Thraw$F4)
 Th[,6] <- extractTheta(Thraw$NCG)
 
-apply(Th, 2, sum)
+# apply(Th, 2, sum)
+
+cat("Creating Bracket Structure\n")
 
 Bstruct <- matrix(NA, nrow = 64, ncol = 6)
 Bstruct[,6] <- 1
@@ -83,12 +91,17 @@ for (i in seq_along(BstuctUnique))
   structureList[[i]] <- which(Bstruct == BstuctUnique[i], arr.ind = TRUE)
 }
 
+cat("Normalizing\n")
+
 P <- normalizeBracket(structureList, P)
 Th <- normalizeBracket(structureList, Th)
+
+cat("Checking\n")
 
 checkBracket(structureList, P)
 checkBracket(structureList, Th)
 
+cat("Saving\n")
+
 save(P, Th, structureList, Bstruct, BstuctUnique, trans,
      file = "2021BracketMetadata.Rdata")
-
