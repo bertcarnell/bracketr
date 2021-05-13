@@ -1,27 +1,82 @@
 ---
-title: "Runner Elite8"
+title: "Bracket Optimization"
 author: "RC"
 date: "5/12/2021"
 output: html_document
+params:
+  output_file: default.csv
+  start_point: Xmax
+  elite8_team: Blank
+  n_truth_brackets: 100
+  n_adversaries: 5
+  pRate: 3
+  nchildren: 10
+  ngenerations: 5
+  gen_method: 2
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-output_file <- "Elite8_runner.csv"
 
 require(ggplot2)
 require(dplyr)
 
 source("../utility_functions.R")
 load("../2021BracketMetadata.Rdata")
-source("common_parameters.R")
+
+# simulation parameters
+n_truth_brackets <- params$n_truth_brackets
+n_adversaries <- params$n_adversaries
+
+# genetic algorithm parameters
+pRate <- params$pRate
+nchildren <- params$nchildren
+ngenerations <- params$ngenerations
+gen_method <- params$gen_method
+
+# common simulation data
+set.seed(193849)
+
+X <- drawTruthSampleList(P, structureList, n_truth_brackets)
+checkTruthSampleList(X, structureList)
+
+Y <- drawAdversarySampleList(Th, structureList, n_truth_brackets, n_adversaries)
+checkAdversarySampleList(Y, structureList, n_truth_brackets, n_adversaries)
+
+Yscore <- scoreAdversarySampleList(Y, X, n_truth_brackets)
 ```
+
+## Report Parameters
+
+- Output File: `r params$output_file`
+- Type of Start Point: `r params$start_point`
+- Elite 8 Team: `r params$elite8_team`
+- Number of truth Brackets: `r params$n_truth_brakcets`
+- Number of Adversaries: `r params$n_adversaries`
+- Poisson Mutation rate: `r params$pRate`
+- Number of children per generation: `r params$nchildren`
+- Number of generations: `r params$ngenerations`
+- Bracket permutation method: `r params$gen_method`
 
 ## Create the Starting Bracket
 
 ```{r createStartBracket}
-Z <- drawMaxLikelihoodBracket(structureList, P, which(trans$TEAM == "Gonzaga"))
+if (params$start_point == "Xmax")
+{
+  Z <- drawMaxLikelihoodBracket(structureList, P)
+} else if (params$start_point == "Ymax")
+{
+  Z <- drawMaxLikelihoodBracket(structureList, Th)
+} else if (params$start_point == "Elite8")
+{
+  team_ind <- which(trans$TEAM == params$elite8_team)
+  assertthat::assert_that(length(team_ind) > 0,
+                          msg = paste0("Team ", params$elite8_team, " not found"))
+  Z <- drawMaxLikelihoodBracket(structureList, P, team_ind)
+} else
+{
+  stop(paste0("Algorithm Start Point ", params$start_point, " not recognized"))
+}
 checkBracket(structureList, Z)
 Zscore <- scoreTruthSampleList(Z, X)
 ```
@@ -32,7 +87,7 @@ Zscore <- scoreTruthSampleList(Z, X)
 newZ <- geneticBracketSearch(Z, pRate, nchildren, ngenerations, TRUE, gen_method)
 
 dimnames(newZ$current_best) <- list(trans$TEAM, paste0("Round", 1:6))
-write.csv(newZ$current_best, file = output_file)
+write.csv(newZ$current_best, file = params$output_file)
 ```
 
 - Score went from `r newZ$start_score` to `r newZ$score`
