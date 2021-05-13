@@ -6,6 +6,8 @@ on:
 jobs:
   run-job:
     runs-on: ubuntu-latest
+    container:
+      image: bertcarnell/r-bracketr
 
     name: ${{ matrix.config.name }}
 
@@ -20,19 +22,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: R container
-        uses: r-lib/actions/setup-r@master
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get upgrade -y
-          sudo apt-get install -y r-cran-ggplot2 r-cran-dplyr
-
       - name: Do Work
         run: |
-          write.csv(data.frame(x=1), file = "${{ matrix.config.name }}.csv"
-        shell: Rscript {0}
+          Rscript -e 'write.csv(data.frame(x=1), file = "${{ matrix.config.name }}.csv"'
+        shell: bash
         
       - name: Run
         run: |
