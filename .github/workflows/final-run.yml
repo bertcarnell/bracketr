@@ -14,35 +14,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        n_truth_brackets: [100]
+        n_adversaries: [5]
+        pRate: [3]
+        nchildren: [10]
+        ngenerations : [5]
+        gen_method: [2]
         config:
-          - {name: 'Xmax', filename: 'run_xmax'}
-          - {name: 'Ymax', filename: 'run_ymax'}
+          - {name: 'Xmax', output_file: 'xmax.csv', start_point: 'Xmax', elite8_team: 'NA'}
+          - {name: 'Ymax', output_file: 'ymax.csv', start_point: 'Ymax', elite8_team: 'NA'}
+          - {name: 'Gonzaga', output_file: 'gonzaga.csv', start_point: 'Elite8', elite8_team: 'Gonzaga'}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Do Work
+      - name: Knit the Results
         run: |
-          Rscript -e 'write.csv(data.frame(x=1), file = "${{ matrix.config.name }}.csv")'
-        shell: bash
-        
-      - name: Run
-        run: |
-          echo "running ${{ matrix.config.name }}"
+          Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", params = list(n_tructh_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
         shell: bash
         
       - name: Upload
         uses: actions/upload-artifact@v2.2.3
         with:
-          path: ${{ matrix.config.name }}.csv
-        
-  collect-job:
-    needs: run-job
-    runs-on: ubuntu-latest
-    name: Collect Artifacts
-    steps:
-      - name: Download
-        uses: actions/download-artifact@v2
-      - name: display files
-        run: ls -alh
+          path: src/${{ matrix.config.output_file }}
