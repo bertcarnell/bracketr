@@ -24,7 +24,7 @@ jobs:
 
       - name: Do Work
         run: |
-          Rscript -e 'write.csv(data.frame(x=1), file = "${{ matrix.config.name }}.csv"'
+          Rscript -e 'write.csv(data.frame(x=1), file = "${{ matrix.config.name }}.csv")'
         shell: bash
         
       - name: Run
