@@ -2,6 +2,9 @@ name: final-run
 
 on:
   workflow_dispatch
+  push:
+    paths:
+      - .github/workflows/final-run.yml
 
 jobs:
   run-job:
@@ -14,16 +17,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        n_truth_brackets: [100]
-        n_adversaries: [5]
+        n_truth_brackets: [2000]
+        n_adversaries: [20]
         pRate: [3]
-        nchildren: [10]
-        ngenerations : [5]
+        nchildren: [50]
+        ngenerations : [50]
         gen_method: [2]
         config:
           - {name: 'Xmax', output_file: 'xmax.csv', start_point: 'Xmax', elite8_team: 'NA'}
           - {name: 'Ymax', output_file: 'ymax.csv', start_point: 'Ymax', elite8_team: 'NA'}
-          - {name: 'Gonzaga', output_file: 'gonzaga.csv', start_point: 'Elite8', elite8_team: 'Gonzaga'}
+          - {name: 'Gonzaga', output_file: 'Gonzaga.csv', start_point: 'Elite8', elite8_team: 'Gonzaga'}
+          - {name: 'Illinois', output_file: 'Illinois.csv', start_point: 'Elite8', elite8_team: 'Illinois'}
+          - {name: 'Baylor', output_file: 'Baylor.csv', start_point: 'Elite8', elite8_team: 'Baylor'}
+          - {name: 'Iowa', output_file: 'Iowa.csv', start_point: 'Elite8', elite8_team: 'Iowa'}
+          - {name: 'Houston', output_file: 'Houston.csv', start_point: 'Elite8', elite8_team: 'Houston'}
+          - {name: 'Ohio State', output_file: 'Ohio State.csv', start_point: 'Elite8', elite8_team: 'Ohio State'}
+          - {name: 'Michigan', output_file: 'Michigan.csv', start_point: 'Elite8', elite8_team: 'Michigan'}
+          - {name: 'Alabama', output_file: 'Alabama.csv', start_point: 'Elite8', elite8_team: 'Alabama'}
 
     steps:
       - name: Checkout
