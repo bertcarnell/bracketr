@@ -3,11 +3,11 @@
 require(assertthat)
 source("utility_functions.R")
 
-cat("\nReading Excel\n")
+cat("\nReading Data\n")
 
-Praw <- read.csv("2021BracketMetadata_538.csv", encoding = "UTF-8")
-Thraw <- read.csv("2021BracketMetadata_ESPN.csv", encoding = "UTF-8")
-trans <- read.csv("2021BracketMetadata_order.csv", encoding = "UTF-8")
+Praw <- read.csv("2021BracketMetadata_538.csv", encoding = "UTF-8", stringsAsFactors = FALSE)
+Thraw <- read.csv("2021BracketMetadata_ESPN.csv", encoding = "UTF-8", stringsAsFactors = FALSE)
+trans <- read.csv("2021BracketMetadata_order.csv", encoding = "UTF-8", stringsAsFactors = FALSE)
 
 cat("Creating P\n")
 
@@ -17,6 +17,7 @@ ind <- match(tolower(trans$TEAM), table = tolower(Praw_teams_clean))
 if (any(is.na(ind)))
 {
   print(Praw$TEAM)
+  print(Praw_teams_clean)
   print(trans$TEAM)
   stop("Error in matching team strings")
 }
