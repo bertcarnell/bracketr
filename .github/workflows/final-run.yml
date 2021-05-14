@@ -24,8 +24,8 @@ jobs:
         ngenerations : [5]
         gen_method: [2]
         config:
-          - {name: 'Xmax', output_file: 'xmax.csv', start_point: 'Xmax', elite8_team: 'NA'}
-          - {name: 'Ymax', output_file: 'ymax.csv', start_point: 'Ymax', elite8_team: 'NA'}
+          - {name: 'Xmax', output_file: 'Xmax.csv', start_point: 'Xmax', elite8_team: 'NA'}
+          - {name: 'Ymax', output_file: 'Ymax.csv', start_point: 'Ymax', elite8_team: 'NA'}
           - {name: 'Gonzaga', output_file: 'Gonzaga.csv', start_point: 'Elite8', elite8_team: 'Gonzaga'}
           - {name: 'Illinois', output_file: 'Illinois.csv', start_point: 'Elite8', elite8_team: 'Illinois'}
           - {name: 'Baylor', output_file: 'Baylor.csv', start_point: 'Elite8', elite8_team: 'Baylor'}
@@ -42,7 +42,7 @@ jobs:
       - name: Knit the Results
         run: |
           Rscript read_brackets.R
-          Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", params = list(n_truth_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
+          Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", output_file = "${{ matrix.config.name }}.html", params = list(n_truth_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
           cp src/*.html doc
         shell: bash
         
