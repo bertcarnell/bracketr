@@ -57,6 +57,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Collect Artifacts
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Download
         uses: actions/download-artifact@v2
         
