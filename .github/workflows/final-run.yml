@@ -59,15 +59,15 @@ jobs:
     steps:
       - name: Download
         uses: actions/download-artifact@v2
-        with:
-          path: download
         
       - name: Display Files
-        run: ls -alh download
+        run: |
+          ls -alh
+          ls -alh artifact
           
       - name: Copy Files
         run: |
-          cp download/*.html docs
+          cp artifact/*.html docs
           ls -alh
           ls -alh src
           ls -alh docs
