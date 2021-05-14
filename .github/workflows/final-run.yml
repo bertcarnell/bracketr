@@ -43,8 +43,14 @@ jobs:
         run: |
           Rscript read_brackets.R
           Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", output_file = "${{ matrix.config.name }}.html", params = list(n_truth_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
-          cp src/${{ matrix.config.name }}.html doc
         shell: bash
+        
+      - name: Copy Files
+        run: |
+          cp src/${{ matrix.config.name }}.html doc/${{ matrix.config.name }}.html
+          ls -alh
+          ls -alh src
+          ls -alh doc
         
       - name: Upload
         uses: actions/upload-artifact@v2.2.3
@@ -63,5 +69,6 @@ jobs:
           git config --global user.name 'bracketr bot'
           git config --global user.email 'bracketr-bot@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git status
           git commit -am "Automated changes"
           git push
