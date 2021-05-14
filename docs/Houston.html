@@ -476,13 +476,13 @@ Zscore &lt;- scoreTruthSampleList(Z, X)</code></pre>
 <div id="genetic-algorithm" class="section level2">
 <h2>Genetic Algorithm</h2>
 <pre class="r"><code>newZ &lt;- geneticBracketSearch(Z, pRate, nchildren, ngenerations, TRUE, gen_method)</code></pre>
-<pre><code>## 2021-05-14 15:48:39 
+<pre><code>## 2021-05-14 18:46:21 
 ##  Generation 1 Poisson Rate 3 P(win) 0.21 
 ##  Generation 2 Poisson Rate 2.375 P(win) 0.265 
 ##  Generation 3 Poisson Rate 1.438 P(win) 0.265 
 ##  Generation 4 Poisson Rate 0.734 P(win) 0.305 
 ##  Generation 5 Poisson Rate 0.5 P(win) 0.325 
-## 2021-05-14 15:48:39</code></pre>
+## 2021-05-14 18:46:22</code></pre>
 <pre class="r"><code>dimnames(newZ$current_best) &lt;- list(trans$TEAM, paste0(&quot;Round&quot;, 1:6))
 write.csv(newZ$current_best, file = params$output_file)</code></pre>
 <ul>
