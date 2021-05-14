@@ -47,10 +47,10 @@ jobs:
         
       - name: Copy Files
         run: |
-          cp src/${{ matrix.config.name }}.html doc/${{ matrix.config.name }}.html
+          cp src/${{ matrix.config.name }}.html docs/${{ matrix.config.name }}.html
           ls -alh
           ls -alh src
-          ls -alh doc
+          ls -alh docs
         
       - name: Upload
         uses: actions/upload-artifact@v2.2.3
@@ -58,13 +58,17 @@ jobs:
           path: |
             src/${{ matrix.config.output_file }} 
             src/${{ matrix.config.name }}.html
+      
+      - name: Remove files not to be checked in
+        run: |
+          rm src/${{ matrix.config.output_file }} src/${{ matrix.config.name }}.html 2021BracketMetadata.Rdata
 
-      #- name: Check for modified files
-      #  id: git-check
-      #  run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
         
       - name: Push changes
-        #if: steps.git-check.outputs.modified == 'true'
+        if: steps.git-check.outputs.modified == 'true'
         run: |
           git config --global user.name 'bracketr bot'
           git config --global user.email 'bracketr-bot@users.noreply.github.com'
