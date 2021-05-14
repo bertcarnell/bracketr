@@ -57,36 +57,28 @@ jobs:
     runs-on: ubuntu-latest
     name: Collect Artifacts
     steps:
-      - name: Checkout
+      - name: Checkout Repo
         uses: actions/checkout@v2
 
-      - name: Download
+      - name: Download Artifacts
         uses: actions/download-artifact@v2
         
-      - name: Display Files
-        run: |
-          ls -alh
-          ls -alh artifact
-          
-      - name: Copy Files
+      - name: Copy Files and Remove Artifact Directory
         run: |
           cp artifact/*.html docs
-          ls -alh
-          ls -alh src
-          ls -alh docs
+          rm -rf artifact
           git status
       
-      #- name: Check for modified files
-      #  id: git-check
-      #  run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
+      - name: Check for Modified Files
+        id: git-check
+        run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
         
-      #- name: Push changes
-      #  if: steps.git-check.outputs.modified == 'true'
-      #  run: |
-      #    git config --global user.name 'bracketr bot'
-      #    git config --global user.email 'bracketr-bot@users.noreply.github.com'
-      #    git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-      #    git commit -am "Automated changes"
-      #    git push
-  
-  
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'bracketr bot'
+          git config --global user.email 'bracketr-bot@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "Automated changes"
+          git push
+
