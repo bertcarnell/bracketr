@@ -17,11 +17,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        n_truth_brackets: [2000]
-        n_adversaries: [20]
+        n_truth_brackets: [200]
+        n_adversaries: [5]
         pRate: [3]
-        nchildren: [50]
-        ngenerations : [50]
+        nchildren: [5]
+        ngenerations : [5]
         gen_method: [2]
         config:
           - {name: 'Xmax', output_file: 'xmax.csv', start_point: 'Xmax', elite8_team: 'NA'}
@@ -43,9 +43,23 @@ jobs:
         run: |
           Rscript read_brackets.R
           Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", params = list(n_truth_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
+          cp src/*.html doc
         shell: bash
         
       - name: Upload
         uses: actions/upload-artifact@v2.2.3
         with:
-          path: src/${{ matrix.config.output_file }}
+          path: src/${{ matrix.config.output_file }} src/*.html
+
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)
+        
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name 'bracketr bot'
+          git config --global user.email 'bracketr-bot@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "Automated changes"
+          git push
