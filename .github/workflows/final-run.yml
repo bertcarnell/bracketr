@@ -31,7 +31,7 @@ jobs:
           - {name: 'Baylor', output_file: 'Baylor.csv', start_point: 'Elite8', elite8_team: 'Baylor'}
           - {name: 'Iowa', output_file: 'Iowa.csv', start_point: 'Elite8', elite8_team: 'Iowa'}
           - {name: 'Houston', output_file: 'Houston.csv', start_point: 'Elite8', elite8_team: 'Houston'}
-          - {name: 'Ohio State', output_file: 'Ohio State.csv', start_point: 'Elite8', elite8_team: 'Ohio State'}
+          - {name: 'OhioState', output_file: 'OhioState.csv', start_point: 'Elite8', elite8_team: 'Ohio State'}
           - {name: 'Michigan', output_file: 'Michigan.csv', start_point: 'Elite8', elite8_team: 'Michigan'}
           - {name: 'Alabama', output_file: 'Alabama.csv', start_point: 'Elite8', elite8_team: 'Alabama'}
 
