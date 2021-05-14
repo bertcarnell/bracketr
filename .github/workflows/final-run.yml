@@ -42,7 +42,7 @@ jobs:
       - name: Knit the Results
         run: |
           Rscript read_brackets.R
-          Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", output_file = "src/${{ matrix.config.name }}.html", params = list(n_truth_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
+          Rscript -e 'rmarkdown::render("src/bracket_optimization.Rmd", output_file = "${{ matrix.config.name }}.html", params = list(n_truth_brackets = ${{ matrix.n_truth_brackets }}, n_adversaries = ${{ matrix.n_adversaries }}, pRate = ${{ matrix.pRate }}, nchildren = ${{ matrix.nchildren }}, ngenerations = ${{ matrix.ngenerations }}, gen_method = ${{ matrix.gen_method }}, output_file = "${{ matrix.config.output_file }}", start_point = "${{ matrix.config.start_point }}", elite8_team = "${{ matrix.config.elite8_team }}"))'
           cp src/${{ matrix.config.name }}.html doc
         shell: bash
         
