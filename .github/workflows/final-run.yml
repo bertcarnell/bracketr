@@ -17,11 +17,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        n_truth_brackets: [200]
-        n_adversaries: [5]
+        n_truth_brackets: [2000]
+        n_adversaries: [20]
         pRate: [3]
-        nchildren: [5]
-        ngenerations : [5]
+        nchildren: [50]
+        ngenerations : [50]
         gen_method: [2]
         config:
           - {name: 'Xmax', output_file: 'Xmax.csv', start_point: 'Xmax', elite8_team: 'NA'}
