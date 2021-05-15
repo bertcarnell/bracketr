@@ -26,7 +26,7 @@ P <- matrix(NA, nrow = 64, ncol = 6)
 
 normalizeValues <- function(x, desiredSum)
 {
-  temp <- suppressWarnings(as.numeric(x))
+  temp <- suppressWarnings(as.numeric(gsub("[%]", "", x)))
   if (any(is.na(temp)))
   {
     if ((desiredSum - sum(temp, na.rm = TRUE)) < 0)
