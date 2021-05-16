@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        n_truth_brackets: [4000]
+        n_truth_brackets: [10000]
         n_adversaries: [20]
         pRate: [3]
         nchildren: [50]
